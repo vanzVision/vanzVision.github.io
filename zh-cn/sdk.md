@@ -32,7 +32,7 @@ allprojects {
 app build.gradle
 ```Java
 dependencies{
-      compile('com.vanz:vanzSdk:1.0.16')
+      compile('com.vanz:vanzSdk:1.0.15')
 }
 最小sdk版本为19
 minSdkVersion 19
@@ -60,9 +60,14 @@ minSdkVersion 19
         VanzInterface view = (VanzInterface) findViewById(R.id.camera);
         view.setCallback(vanzCallback);
         //vanzCallback 回调消息类 见8-1
+        createHandler();
 
         Vanz vanz = Vanz.getInstance();
         vanz.init(this);
+    }
+    public void onResume() {
+        super.onResume();
+        view.OpenvcInit();
     }
 ```
 
@@ -99,38 +104,66 @@ minSdkVersion 19
 
 - 8-2 资源服务器 样本组选择
 ```Java
+ private void createHandler() {
+        Looper mainLooper = Looper.getMainLooper();
+        mainHandler = new Handler(mainLooper) {
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                switch (msg.what) {
+                    case 0:
+                        vanz.getGruopData(new OnVanzCallBack.OnSpinner() {
+                            @Override
+                            public void onSuccess(final List<String> list, final int num) {
+                                //样本组
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Spinner spinner = (Spinner) findViewById(R.id.spinner);
+                                        loadSpinner(spinner, list, num);
+                                        mainHandler.sendEmptyMessage(1);
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onError(int msg) {
+
+                            }
+                        });
+                        break;
+                    case 1:
+                        vanz.getRescSerData(new OnVanzCallBack.OnSpinner() {
+                            @Override
+                            public void onSuccess(final List<String> list, final int first) {
+                                //资源服务器
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Spinner spinner = (Spinner) findViewById(R.id.spinnerS);
+                                        loadSpinner(spinner, list, first);
+
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onError(int msg) {
+
+                            }
+                        });
+                        break;
+                    default:
+                        break;
+                }
+            }
+        };
+    }
         //样本组、资源服务器信息选择获取
         vanz.setOnBasicLib(new OnVanzCallBack.OnBasicLib() {
             @Override
             public void onRegistered() {
-                vanz.getGruopData(new OnVanzCallBack.OnSpinner() {
-                    @Override
-                    public void onSuccess(final List<String> list, final int num) {
-                        //样本组
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Spinner spinner = (Spinner) findViewById(R.id.spinner);
-                                loadSpinner(spinner, list, num);
-                            }
-                        });
-                    }
-                });
-
-                vanz.getRescSerData(new OnVanzCallBack.OnSpinner() {
-                    @Override
-                    public void onSuccess(final List<String> list, final int first) {
-                        //资源服务器
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Spinner spinner = (Spinner) findViewById(R.id.spinnerS);
-                                loadSpinner(spinner, list, first);
-
-                            }
-                        });
-                    }
-                });
+                mainHandler.sendEmptyMessage(0);
             }
 
             @Override
@@ -142,7 +175,8 @@ minSdkVersion 19
 - 8-3 识别初始化监听回调
 
 ```Java
- vanz.setOnPortDevice(new OnVanzCallBack.OnPortDevice() {
+
+        vanz.setOnPortDevice(new OnVanzCallBack.OnPortDevice() {
             @Override
             public void Initialize() {
                 runOnUiThread(new Runnable() {
@@ -155,18 +189,18 @@ minSdkVersion 19
 
             @Override
             public void onWeighing(int state) {
-                if (!isOpen) return;
+                Log.i("===>", "onWeighing: "+state);
                 //1 开始变化 2 稳定有东西 3 稳定没东西
                 if (state == 2) {
                     view.TaskIdentify(new VanzInterface.Analyer() {
                         @Override
                         public void onSuccess(JSONObject jsonObject, Bitmap bitmap) {
-                            Log.i("===>", "onSuccess: "+jsonObject);
+                            Log.i("===>", "onSuccess: " + jsonObject);
                         }
 
                         @Override
                         public void onFaileMsg(String msg) {
-
+                            Log.i("===>", "onFaileMsg: "+msg);
                         }
 
                         @Override
