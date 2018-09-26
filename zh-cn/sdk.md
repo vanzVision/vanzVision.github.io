@@ -52,6 +52,8 @@ minSdkVersion 19
 - 在onCreated之后进行VanzInterface初始化，以及vanz单例初始化
 
 ```Java
+    private Boolean isIdentify = false;//是否可以进行识别
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,7 +79,8 @@ minSdkVersion 19
     private VanzInterface.VanzCallback vanzCallback = new VanzInterface.VanzCallback() {
         @Override
         public void onViewReady(String deviceName) {    
-            //摄像头链接准备成功
+           //摄像头链接准备成功 注意，该操作回调成功后方可后续识别执行动作
+            isIdentify = true;
         }
 
         @Override
@@ -189,6 +192,7 @@ minSdkVersion 19
 
             @Override
             public void onWeighing(int state) {
+                 if(!isIdentify) return;
                 Log.i("===>", "onWeighing: "+state);
                 //1 开始变化 2 稳定有东西 3 稳定没东西
                 if (state == 2) {
