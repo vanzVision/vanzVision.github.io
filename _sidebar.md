@@ -7,5 +7,5 @@
   *  [API-DOC](/zh-cn/api.md)
   *  [错误码](/zh-cn/errcode.md)
 * 服务器api接口说明
- * [api接口说明](/zh-cn/server/api.md)
+ * [api接口说明](/api-doc)
  * [交互示意图](/zh-cn/server/diagram.md)
