@@ -32,7 +32,7 @@ allprojects {
 app build.gradle
 ```Java
 dependencies{
-      compile('com.vanz:vanzSdk:1.0.15')
+      compile('com.vanz:vanzSdk:1.0.16')
 }
 最小sdk版本为19
 minSdkVersion 19
@@ -203,8 +203,8 @@ minSdkVersion 19
                         }
 
                         @Override
-                        public void onFaileMsg(String msg) {
-                            Log.i("===>", "onFaileMsg: "+msg);
+                        public void onFaileMsg(String msg,int code) {
+                            Log.i("===>", "onFaileMsg: "+msg+"code:"+code);
                         }
 
                         @Override
